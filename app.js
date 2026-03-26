@@ -18,14 +18,12 @@ const config = {
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.json()); // Hỗ trợ đọc dữ liệu JSON
+app.use(express.json());
 
-// 1. Gửi file HTML chính
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
 
-// 2. API lấy dữ liệu khách hàng (Để HTML gọi fetch)
 app.get('/api/data', async (req, res) => {
     try {
         let pool = await sql.connect(config);
@@ -36,7 +34,6 @@ app.get('/api/data', async (req, res) => {
     }
 });
 
-// --- CÁC ROUTE POST GIỮ NGUYÊN LOGIC ---
 app.post('/add-customer', async (req, res) => {
     try {
         const { MaKH, TenKH, SDT, DiaChi } = req.body;
@@ -95,7 +92,7 @@ app.post('/add-invoice', async (req, res) => {
 
 app.post('/add-payment', async (req, res) => {
     try {
-        const { MaTT, NgayThanhToan, MaKH, SoTien, MaHD } = req.body;
+        const { MaTT, NgayThanhToan, MaKH, SoTien } = req.body;
 
         let pool = await sql.connect(config);
 
@@ -104,10 +101,9 @@ app.post('/add-payment', async (req, res) => {
             .input('NgayThanhToan', sql.Date, NgayThanhToan)
             .input('MaKH', sql.VarChar, MaKH)
             .input('SoTien', sql.Decimal, SoTien)
-            .input('MaHD', sql.VarChar, MaHD ? MaHD : null) // ✅ QUAN TRỌNG
             .query(`
-                INSERT INTO ThanhToan (MaTT, NgayThanhToan, SoTien, MaKH, MaHD)
-                VALUES (@MaTT, @NgayThanhToan, @SoTien, @MaKH, @MaHD)
+                INSERT INTO ThanhToan (MaTT, NgayThanhToan, SoTien, MaKH)
+                VALUES (@MaTT, @NgayThanhToan, @SoTien, @MaKH)
             `);
 
         res.redirect('/');
