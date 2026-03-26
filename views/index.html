@@ -46,26 +46,33 @@
         <div class="card">
             <h2>🛒 Xuất Hóa Đơn</h2>
             <form action="/add-invoice" method="POST">
-                <input type="text" name="MaHD" placeholder="Mã HĐ" required>
-                <input type="date" name="NgayLap" required>
-                <input type="text" name="MaKH" placeholder="Mã Khách Hàng" required>
-                <input type="text" name="MaSP" placeholder="Mã Sản Phẩm" required>
-                <input type="number" name="SoLuong" placeholder="Số lượng bình" required>
-                <input type="number" name="SoVoKhachTra" placeholder="Vỏ khách trả" required>
-                <button type="submit" class="btn-invoice">Xác Nhận Xuất</button>
-            </form>
+        <input type="text" name="MaHD" placeholder="Mã HĐ" required>
+        <input type="date" name="NgayLap" required>
+        <input type="text" name="MaKH" placeholder="Mã Khách Hàng" required>
+        <input type="text" name="MaSP" placeholder="Mã Sản Phẩm" required>
+        <input type="number" name="SoLuong" placeholder="Số lượng bình" required>
+        <input type="number" name="SoVoKhachTra" placeholder="Vỏ khách trả" required>
+
+        <input type="number" name="DaThanhToan" placeholder="Tiền khách trả ngay">
+
+        <button type="submit" class="btn-invoice">Xác Nhận Xuất</button>
+</form>
         </div>
 
         <div class="card">
-            <h2>💰 Thu Tiền Nợ</h2>
-            <form action="/add-payment" method="POST">
-                <input type="text" name="MaTT" placeholder="Mã Thanh Toán" required>
-                <input type="date" name="NgayThanhToan" required>
-                <input type="text" name="MaKH" placeholder="Mã Khách Hàng" required>
-                <input type="number" name="SoTien" placeholder="Số tiền khách trả" required>
-                <button type="submit" class="btn-pay">Xác Nhận Thu Tiền</button>
-            </form>
-        </div>
+    <h2>💰 Thu Tiền</h2>
+    <form action="/add-payment" method="POST">
+        <input type="text" name="MaTT" placeholder="Mã Thanh Toán" required>
+        <input type="date" name="NgayThanhToan" required>
+        <input type="text" name="MaKH" placeholder="Mã Khách Hàng" required>
+
+        <input type="text" name="MaHD" placeholder="Mã Hóa Đơn (nếu trả theo hóa đơn)">
+
+        <input type="number" name="SoTien" placeholder="Số tiền khách trả" required>
+        
+        <button type="submit" class="btn-pay">Xác Nhận Thu Tiền</button>
+    </form>
+</div>
     </div>
 
     <h2>📊 Bảng Tổng Hợp Công Nợ</h2>

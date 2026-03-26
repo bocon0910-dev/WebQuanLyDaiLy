@@ -63,29 +63,57 @@ app.post('/add-product', async (req, res) => {
 
 app.post('/add-invoice', async (req, res) => {
     try {
-        const { MaHD, NgayLap, SoVoKhachTra, MaKH, MaSP, SoLuong } = req.body;
+        const { MaHD, NgayLap, SoVoKhachTra, MaKH, MaSP, SoLuong, DaThanhToan } = req.body;
+
         let pool = await sql.connect(config);
+
         await pool.request()
-            .input('MaHD', sql.VarChar, MaHD).input('NgayLap', sql.Date, NgayLap)
-            .input('SoVoKhachTra', sql.Int, SoVoKhachTra).input('MaKH', sql.VarChar, MaKH)
-            .query('INSERT INTO HoaDon (MaHD, NgayLap, SoVoKhachTra, DaThanhToan, MaKH) VALUES (@MaHD, @NgayLap, @SoVoKhachTra, 0, @MaKH)');
+            .input('MaHD', sql.VarChar, MaHD)
+            .input('NgayLap', sql.Date, NgayLap)
+            .input('SoVoKhachTra', sql.Int, SoVoKhachTra)
+            .input('MaKH', sql.VarChar, MaKH)
+            .input('DaThanhToan', sql.Decimal, DaThanhToan || 0) // ✅ QUAN TRỌNG
+            .query(`
+                INSERT INTO HoaDon (MaHD, NgayLap, SoVoKhachTra, DaThanhToan, MaKH) 
+                VALUES (@MaHD, @NgayLap, @SoVoKhachTra, @DaThanhToan, @MaKH)
+            `);
+
         await pool.request()
-            .input('MaHD', sql.VarChar, MaHD).input('MaSP', sql.VarChar, MaSP).input('SoLuong', sql.Int, SoLuong)
-            .query('INSERT INTO ChiTietHoaDon (MaHD, MaSP, SoLuong) VALUES (@MaHD, @MaSP, @SoLuong)');
+            .input('MaHD', sql.VarChar, MaHD)
+            .input('MaSP', sql.VarChar, MaSP)
+            .input('SoLuong', sql.Int, SoLuong)
+            .query(`
+                INSERT INTO ChiTietHoaDon (MaHD, MaSP, SoLuong) 
+                VALUES (@MaHD, @MaSP, @SoLuong)
+            `);
+
         res.redirect('/');
-    } catch (err) { res.status(500).send(err.message); }
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
 });
 
 app.post('/add-payment', async (req, res) => {
     try {
-        const { MaTT, NgayThanhToan, MaKH, SoTien } = req.body;
+        const { MaTT, NgayThanhToan, MaKH, SoTien, MaHD } = req.body;
+
         let pool = await sql.connect(config);
+
         await pool.request()
-            .input('MaTT', sql.VarChar, MaTT).input('NgayThanhToan', sql.Date, NgayThanhToan)
-            .input('MaKH', sql.VarChar, MaKH).input('SoTien', sql.Decimal, SoTien)
-            .query('INSERT INTO ThanhToan (MaTT, NgayThanhToan, SoTien, MaKH) VALUES (@MaTT, @NgayThanhToan, @SoTien, @MaKH)');
+            .input('MaTT', sql.VarChar, MaTT)
+            .input('NgayThanhToan', sql.Date, NgayThanhToan)
+            .input('MaKH', sql.VarChar, MaKH)
+            .input('SoTien', sql.Decimal, SoTien)
+            .input('MaHD', sql.VarChar, MaHD ? MaHD : null) // ✅ QUAN TRỌNG
+            .query(`
+                INSERT INTO ThanhToan (MaTT, NgayThanhToan, SoTien, MaKH, MaHD)
+                VALUES (@MaTT, @NgayThanhToan, @SoTien, @MaKH, @MaHD)
+            `);
+
         res.redirect('/');
-    } catch (err) { res.status(500).send(err.message); }
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
 });
 
 const PORT = 9101;
