@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản Lý Đại Lý Nước</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 20px; background-color: #f4f7f6; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h2 { color: #007bff; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        input, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { color: white; border: none; padding: 12px; cursor: pointer; border-radius: 4px; width: 100%; font-weight: bold; }
+        .btn-add { background: #28a745; } .btn-invoice { background: #ffc107; color: black; } .btn-pay { background: #17a2b8; }
+        table { width: 100%; border-collapse: collapse; margin-top: 25px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+    </style>
+</head>
+<body>
+
+    <h1>💧 Hệ Thống Quản Lý Đại Lý Nước</h1>
+
+    <div class="grid">
+        <div class="card">
+            <h2>📦 Sản Phẩm Mới</h2>
+            <form action="/add-product" method="POST">
+                <input type="text" name="MaSP" placeholder="Mã SP (VD: SP01)" required>
+                <input type="text" name="TenSP" placeholder="Tên nước (VD: Lavie 19L)" required>
+                <input type="number" name="GiaNuoc" placeholder="Giá nước (đ)" required>
+                <input type="number" name="GiaVo" placeholder="Giá vỏ (đ)" required>
+                <button type="submit" class="btn-add">Lưu Sản Phẩm</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>👤 Khách Hàng</h2>
+            <form action="/add-customer" method="POST">
+                <input type="text" name="MaKH" placeholder="Mã KH (VD: MKH1)" required>
+                <input type="text" name="TenKH" placeholder="Tên khách hàng" required>
+                <input type="text" name="SDT" placeholder="Số điện thoại">
+                <input type="text" name="DiaChi" placeholder="Địa chỉ">
+                <button type="submit" class="btn-add">Thêm Khách</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>🛒 Xuất Hóa Đơn</h2>
+            <form action="/add-invoice" method="POST">
+                <input type="text" name="MaHD" placeholder="Mã HĐ (VD: HD01)" required>
+                <input type="date" name="NgayLap" required>
+                <input type="text" name="MaKH" placeholder="Mã Khách Hàng" required>
+                <input type="text" name="MaSP" placeholder="Mã Sản Phẩm" required>
+                <input type="number" name="SoLuong" placeholder="Số lượng bình" required>
+                <input type="number" name="SoVoKhachTra" placeholder="Vỏ khách trả" required>
+                <button type="submit" class="btn-invoice">Xác Nhận Xuất</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>💰 Thu Tiền Nợ</h2>
+            <form action="/add-payment" method="POST">
+                <input type="text" name="MaTT" placeholder="Mã Thanh Toán (VD: TT01)" required>
+                <input type="date" name="NgayThanhToan" required>
+                <input type="text" name="MaKH" placeholder="Mã Khách Hàng" required>
+                <input type="number" name="SoTien" placeholder="Số tiền khách trả" required>
+                <button type="submit" class="btn-pay">Xác Nhận Thu Tiền</button>
+            </form>
+        </div>
+    </div>
+
+    <h2>📊 Bảng Tổng Hợp Công Nợ</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Mã KH</th>
+                <th>Tên Khách Hàng</th>
+                <th>Số Điện Thoại</th>
+                <th>Nợ Hiện Tại</th>
+                <th>Vỏ Đang Giữ</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% customers.forEach(function(c) { %>
+                <tr>
+                    <td><%= c.MaKH %></td>
+                    <td><%= c.TenKH %></td>
+                    <td><%= c.SDT %></td>
+                    <td style="color: red; font-weight: bold;"><%= (c.NoHienTai || 0).toLocaleString() %> đ</td>
+                    <td style="color: blue; font-weight: bold;"><%= c.VoDangGiu || 0 %></td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+
+</body>
+</html>
