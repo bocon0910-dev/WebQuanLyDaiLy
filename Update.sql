@@ -1,27 +1,3 @@
-CREATE TRIGGER TRG_UpdateVoDangGiu
-ON ChiTietHoaDon
-AFTER INSERT
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    UPDATE k
-    SET VoDangGiu = k.VoDangGiu 
-                    + ISNULL(t.TongSoLuong,0) 
-                    - ISNULL(h.SoVoKhachTra,0)
-    FROM KhachHang k
-    JOIN HoaDon h ON k.MaKH = h.MaKH
-    JOIN (
-        SELECT MaHD, SUM(SoLuong) AS TongSoLuong
-        FROM inserted
-        GROUP BY MaHD
-    ) t ON h.MaHD = t.MaHD
-END
-GO
-
-DROP TRIGGER IF EXISTS TRG_UpdateHoaDon;
-GO
-
 CREATE TRIGGER TRG_UpdateHoaDon
 ON ChiTietHoaDon
 AFTER INSERT
@@ -42,7 +18,9 @@ BEGIN
     ) t ON h.MaHD = t.MaHD;
 
     UPDATE k
-    SET NoHienTai = k.NoHienTai + t.TongTien
+    SET NoHienTai = k.NoHienTai 
+                    + ISNULL(t.TongTien,0) 
+                    - ISNULL(h.DaThanhToan,0)
     FROM KhachHang k
     JOIN HoaDon h ON k.MaKH = h.MaKH
     JOIN (
@@ -53,9 +31,6 @@ BEGIN
     ) t ON h.MaHD = t.MaHD;
 
 END
-GO
-
-DROP TRIGGER IF EXISTS TRG_UpdateThanhToan;
 GO
 
 CREATE TRIGGER TRG_UpdateThanhToan
