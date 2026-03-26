@@ -3,39 +3,76 @@ ON ChiTietHoaDon
 AFTER INSERT
 AS
 BEGIN
-    UPDATE KhachHang
-    SET VoDangGiu = VoDangGiu + (SELECT SoLuong FROM inserted) - 
-                    (SELECT SoVoKhachTra FROM HoaDon WHERE MaHD = (SELECT MaHD FROM inserted))
-    WHERE MaKH = (SELECT MaKH FROM HoaDon WHERE MaHD = (SELECT MaHD FROM inserted))
+    SET NOCOUNT ON;
+
+    UPDATE k
+    SET VoDangGiu = k.VoDangGiu 
+                    + ISNULL(t.TongSoLuong,0) 
+                    - ISNULL(h.SoVoKhachTra,0)
+    FROM KhachHang k
+    JOIN HoaDon h ON k.MaKH = h.MaKH
+    JOIN (
+        SELECT MaHD, SUM(SoLuong) AS TongSoLuong
+        FROM inserted
+        GROUP BY MaHD
+    ) t ON h.MaHD = t.MaHD
 END
 GO
 
-CREATE TRIGGER TRG_UpdateNoKhiMuaHang
+DROP TRIGGER IF EXISTS TRG_UpdateHoaDon;
+GO
+
+CREATE TRIGGER TRG_UpdateHoaDon
 ON ChiTietHoaDon
 AFTER INSERT
 AS
 BEGIN
-    UPDATE KhachHang
-    SET NoHienTai = NoHienTai + (
-        SELECT (i.SoLuong * s.GiaNuoc)
+    SET NOCOUNT ON;
+
+    UPDATE k
+    SET VoDangGiu = k.VoDangGiu 
+                    + ISNULL(t.TongSoLuong,0) 
+                    - ISNULL(h.SoVoKhachTra,0)
+    FROM KhachHang k
+    JOIN HoaDon h ON k.MaKH = h.MaKH
+    JOIN (
+        SELECT MaHD, SUM(SoLuong) AS TongSoLuong
+        FROM inserted
+        GROUP BY MaHD
+    ) t ON h.MaHD = t.MaHD;
+
+    UPDATE k
+    SET NoHienTai = k.NoHienTai + t.TongTien
+    FROM KhachHang k
+    JOIN HoaDon h ON k.MaKH = h.MaKH
+    JOIN (
+        SELECT i.MaHD, SUM(i.SoLuong * s.GiaNuoc) AS TongTien
         FROM inserted i
         JOIN SanPham s ON i.MaSP = s.MaSP
-    )
-    WHERE MaKH = (
-        SELECT h.MaKH 
-        FROM HoaDon h 
-        JOIN inserted i ON h.MaHD = i.MaHD
-    )
+        GROUP BY i.MaHD
+    ) t ON h.MaHD = t.MaHD;
+
 END
 GO
 
-CREATE TRIGGER TRG_UpdateNoKhiThanhToan
+DROP TRIGGER IF EXISTS TRG_UpdateThanhToan;
+GO
+
+CREATE TRIGGER TRG_UpdateThanhToan
 ON ThanhToan
 AFTER INSERT
 AS
 BEGIN
-    UPDATE KhachHang
-    SET NoHienTai = NoHienTai - (SELECT SoTien FROM inserted)
-    WHERE MaKH = (SELECT MaKH FROM inserted)
+    SET NOCOUNT ON;
+
+    UPDATE k
+    SET NoHienTai = k.NoHienTai - t.TongTien
+    FROM KhachHang k
+    JOIN (
+        SELECT MaKH, SUM(SoTien) AS TongTien
+        FROM inserted
+        GROUP BY MaKH
+    ) t ON k.MaKH = t.MaKH;
+
 END
 GO

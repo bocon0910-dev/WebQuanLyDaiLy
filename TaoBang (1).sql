@@ -18,11 +18,11 @@ CREATE TABLE HoaDon (
     MaHD VARCHAR(10) PRIMARY KEY,
     NgayLap DATE,
     SoVoKhachTra INT DEFAULT 0,
-    DaThanhToan BIT DEFAULT 0,
+    DaThanhToan DECIMAL(12,2) DEFAULT 0,
     MaKH VARCHAR(10),
 
-    CONSTRAINT FK_HoaDon_KhachHang
-    FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH)
+    FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH),
+    CONSTRAINT CK_SoVo CHECK (SoVoKhachTra >= 0)
 );
 
 CREATE TABLE ChiTietHoaDon (
@@ -32,10 +32,7 @@ CREATE TABLE ChiTietHoaDon (
 
     PRIMARY KEY (MaHD, MaSP),
 
-    CONSTRAINT FK_CTHD_HoaDon
     FOREIGN KEY (MaHD) REFERENCES HoaDon(MaHD),
-
-    CONSTRAINT FK_CTHD_SanPham
     FOREIGN KEY (MaSP) REFERENCES SanPham(MaSP),
 
     CONSTRAINT CK_SoLuong CHECK (SoLuong > 0)
@@ -48,12 +45,6 @@ CREATE TABLE ThanhToan (
     GhiChu NVARCHAR(255),
     MaKH VARCHAR(10),
 
-    CONSTRAINT FK_ThanhToan_KhachHang
     FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH),
-
     CONSTRAINT CK_SoTien CHECK (SoTien > 0)
 );
-
-ALTER TABLE HoaDon
-ADD CONSTRAINT CK_SoVo CHECK (SoVoKhachTra >= 0);
-
