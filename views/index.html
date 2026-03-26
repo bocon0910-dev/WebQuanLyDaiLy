@@ -18,14 +18,14 @@
 </head>
 <body>
 
-    <h1>💧 Hệ Thống Quản Lý Đại Lý Nước</h1>
+    <h1>💧 Hệ Thống Quản Lý Đại Lý Nước (HTML Version)</h1>
 
     <div class="grid">
         <div class="card">
             <h2>📦 Sản Phẩm Mới</h2>
             <form action="/add-product" method="POST">
                 <input type="text" name="MaSP" placeholder="Mã SP (VD: SP01)" required>
-                <input type="text" name="TenSP" placeholder="Tên nước (VD: Lavie 19L)" required>
+                <input type="text" name="TenSP" placeholder="Tên nước" required>
                 <input type="number" name="GiaNuoc" placeholder="Giá nước (đ)" required>
                 <input type="number" name="GiaVo" placeholder="Giá vỏ (đ)" required>
                 <button type="submit" class="btn-add">Lưu Sản Phẩm</button>
@@ -35,7 +35,7 @@
         <div class="card">
             <h2>👤 Khách Hàng</h2>
             <form action="/add-customer" method="POST">
-                <input type="text" name="MaKH" placeholder="Mã KH (VD: MKH1)" required>
+                <input type="text" name="MaKH" placeholder="Mã KH" required>
                 <input type="text" name="TenKH" placeholder="Tên khách hàng" required>
                 <input type="text" name="SDT" placeholder="Số điện thoại">
                 <input type="text" name="DiaChi" placeholder="Địa chỉ">
@@ -46,7 +46,7 @@
         <div class="card">
             <h2>🛒 Xuất Hóa Đơn</h2>
             <form action="/add-invoice" method="POST">
-                <input type="text" name="MaHD" placeholder="Mã HĐ (VD: HD01)" required>
+                <input type="text" name="MaHD" placeholder="Mã HĐ" required>
                 <input type="date" name="NgayLap" required>
                 <input type="text" name="MaKH" placeholder="Mã Khách Hàng" required>
                 <input type="text" name="MaSP" placeholder="Mã Sản Phẩm" required>
@@ -59,7 +59,7 @@
         <div class="card">
             <h2>💰 Thu Tiền Nợ</h2>
             <form action="/add-payment" method="POST">
-                <input type="text" name="MaTT" placeholder="Mã Thanh Toán (VD: TT01)" required>
+                <input type="text" name="MaTT" placeholder="Mã Thanh Toán" required>
                 <input type="date" name="NgayThanhToan" required>
                 <input type="text" name="MaKH" placeholder="Mã Khách Hàng" required>
                 <input type="number" name="SoTien" placeholder="Số tiền khách trả" required>
@@ -79,18 +79,39 @@
                 <th>Vỏ Đang Giữ</th>
             </tr>
         </thead>
-        <tbody>
-            <% customers.forEach(function(c) { %>
-                <tr>
-                    <td><%= c.MaKH %></td>
-                    <td><%= c.TenKH %></td>
-                    <td><%= c.SDT %></td>
-                    <td style="color: red; font-weight: bold;"><%= (c.NoHienTai || 0).toLocaleString() %> đ</td>
-                    <td style="color: blue; font-weight: bold;"><%= c.VoDangGiu || 0 %></td>
-                </tr>
-            <% }); %>
-        </tbody>
+        <tbody id="customer-table-body">
+            </tbody>
     </table>
 
+    <script>
+        // Hàm lấy dữ liệu từ Server và hiển thị lên bảng
+        async function loadData() {
+            try {
+                const response = await fetch('/api/data');
+                const customers = await response.json();
+                const tableBody = document.getElementById('customer-table-body');
+                
+                tableBody.innerHTML = ''; // Xóa nội dung cũ
+
+                customers.forEach(c => {
+                    const row = `
+                        <tr>
+                            <td>${c.MaKH}</td>
+                            <td>${c.TenKH}</td>
+                            <td>${c.SDT || ''}</td>
+                            <td style="color: red; font-weight: bold;">${(c.NoHienTai || 0).toLocaleString()} đ</td>
+                            <td style="color: blue; font-weight: bold;">${c.VoDangGiu || 0}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            } catch (err) {
+                console.error("Lỗi khi tải dữ liệu:", err);
+            }
+        }
+
+        // Chạy hàm loadData khi trang web vừa mở xong
+        window.onload = loadData;
+    </script>
 </body>
 </html>
