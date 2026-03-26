@@ -1,41 +1,50 @@
-CREATE TRIGGER TRG_UpdateVoDangGiu
+ALTER TRIGGER TRG_UpdateVoDangGiu
 ON ChiTietHoaDon
 AFTER INSERT
 AS
 BEGIN
     UPDATE KhachHang
-    SET VoDangGiu = VoDangGiu + (SELECT SoLuong FROM inserted) - 
-                    (SELECT SoVoKhachTra FROM HoaDon WHERE MaHD = (SELECT MaHD FROM inserted))
-    WHERE MaKH = (SELECT MaKH FROM HoaDon WHERE MaHD = (SELECT MaHD FROM inserted))
+    SET VoDangGiu = VoDangGiu + ISNULL(t.TongSoLuong,0) - ISNULL(h.SoVoKhachTra,0)
+    FROM KhachHang k
+    JOIN HoaDon h ON k.MaKH = h.MaKH
+    JOIN (
+        SELECT MaHD, SUM(SoLuong) AS TongSoLuong
+        FROM inserted
+        GROUP BY MaHD
+    ) t ON h.MaHD = t.MaHD
 END
 GO
 
-CREATE TRIGGER TRG_UpdateNoKhiMuaHang
+ALTER TRIGGER TRG_UpdateNoKhiMuaHang
 ON ChiTietHoaDon
 AFTER INSERT
 AS
 BEGIN
     UPDATE KhachHang
-    SET NoHienTai = NoHienTai + (
-        SELECT (i.SoLuong * s.GiaNuoc)
+    SET NoHienTai = NoHienTai + t.TongTien
+    FROM KhachHang k
+    JOIN HoaDon h ON k.MaKH = h.MaKH
+    JOIN (
+        SELECT i.MaHD, SUM(i.SoLuong * s.GiaNuoc) AS TongTien
         FROM inserted i
         JOIN SanPham s ON i.MaSP = s.MaSP
-    )
-    WHERE MaKH = (
-        SELECT h.MaKH 
-        FROM HoaDon h 
-        JOIN inserted i ON h.MaHD = i.MaHD
-    )
+        GROUP BY i.MaHD
+    ) t ON h.MaHD = t.MaHD
 END
 GO
 
-CREATE TRIGGER TRG_UpdateNoKhiThanhToan
+ALTER TRIGGER TRG_UpdateNoKhiThanhToan
 ON ThanhToan
 AFTER INSERT
 AS
 BEGIN
     UPDATE KhachHang
-    SET NoHienTai = NoHienTai - (SELECT SoTien FROM inserted)
-    WHERE MaKH = (SELECT MaKH FROM inserted)
+    SET NoHienTai = NoHienTai - t.TongTien
+    FROM KhachHang k
+    JOIN (
+        SELECT MaKH, SUM(SoTien) AS TongTien
+        FROM inserted
+        GROUP BY MaKH
+    ) t ON k.MaKH = t.MaKH
 END
 GO
