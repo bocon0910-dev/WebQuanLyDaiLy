@@ -1,0 +1,59 @@
+CREATE TABLE KhachHang (
+    MaKH VARCHAR(10) PRIMARY KEY,
+    TenKH NVARCHAR(100),
+    SDT VARCHAR(15),
+    DiaChi NVARCHAR(255),
+    NoHienTai DECIMAL(12,2) DEFAULT 0,
+    VoDangGiu INT DEFAULT 0
+);
+
+CREATE TABLE SanPham (
+    MaSP VARCHAR(10) PRIMARY KEY,
+    TenSP NVARCHAR(100),
+    GiaNuoc DECIMAL(10,2),
+    GiaVo DECIMAL(10,2)
+);
+
+CREATE TABLE HoaDon (
+    MaHD VARCHAR(10) PRIMARY KEY,
+    NgayLap DATE,
+    SoVoKhachTra INT DEFAULT 0,
+    DaThanhToan BIT DEFAULT 0,
+    MaKH VARCHAR(10),
+
+    CONSTRAINT FK_HoaDon_KhachHang
+    FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH)
+);
+
+CREATE TABLE ChiTietHoaDon (
+    MaHD VARCHAR(10),
+    MaSP VARCHAR(10),
+    SoLuong INT,
+
+    PRIMARY KEY (MaHD, MaSP),
+
+    CONSTRAINT FK_CTHD_HoaDon
+    FOREIGN KEY (MaHD) REFERENCES HoaDon(MaHD),
+
+    CONSTRAINT FK_CTHD_SanPham
+    FOREIGN KEY (MaSP) REFERENCES SanPham(MaSP),
+
+    CONSTRAINT CK_SoLuong CHECK (SoLuong > 0)
+);
+
+CREATE TABLE ThanhToan (
+    MaTT VARCHAR(10) PRIMARY KEY,
+    NgayThanhToan DATE,
+    SoTien DECIMAL(12,2),
+    GhiChu NVARCHAR(255),
+    MaKH VARCHAR(10),
+
+    CONSTRAINT FK_ThanhToan_KhachHang
+    FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH),
+
+    CONSTRAINT CK_SoTien CHECK (SoTien > 0)
+);
+
+ALTER TABLE HoaDon
+ADD CONSTRAINT CK_SoVo CHECK (SoVoKhachTra >= 0);
+
