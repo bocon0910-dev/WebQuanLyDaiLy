@@ -4,32 +4,44 @@ AFTER INSERT
 AS
 BEGIN
     SET NOCOUNT ON;
-
     UPDATE k
-    SET VoDangGiu = k.VoDangGiu 
-                    + ISNULL(t.TongSoLuong,0) 
-                    - ISNULL(h.SoVoKhachTra,0)
+    SET VoDangGiu = k.VoDangGiu
+                    + ISNULL(agg.TongSoLuong, 0)
+                    - ISNULL(agg.SoVo, 0)
     FROM KhachHang k
-    JOIN HoaDon h ON k.MaKH = h.MaKH
     JOIN (
-        SELECT MaHD, SUM(SoLuong) AS TongSoLuong
-        FROM inserted
-        GROUP BY MaHD
-    ) t ON h.MaHD = t.MaHD;
-
-    UPDATE k
-    SET NoHienTai = k.NoHienTai 
-                    + ISNULL(t.TongTien,0) 
-                    - ISNULL(h.DaThanhToan,0)
-    FROM KhachHang k
-    JOIN HoaDon h ON k.MaKH = h.MaKH
-    JOIN (
-        SELECT i.MaHD, SUM(i.SoLuong * s.GiaNuoc) AS TongTien
+        SELECT
+            h.MaKH,
+            SUM(i.SoLuong)          AS TongSoLuong,
+            MAX(h.SoVoKhachTra)     AS SoVo
+            -- MAX vì mỗi MaHD chỉ có 1 giá trị SoVoKhachTra,
+            -- dùng MAX để collapse sau GROUP BY MaKH
         FROM inserted i
-        JOIN SanPham s ON i.MaSP = s.MaSP
-        GROUP BY i.MaHD
-    ) t ON h.MaHD = t.MaHD;
-
+        JOIN HoaDon h ON i.MaHD = h.MaHD
+        GROUP BY h.MaKH
+    ) agg ON k.MaKH = agg.MaKH;
+    UPDATE k
+    SET NoHienTai = CASE
+        WHEN k.NoHienTai + ISNULL(agg.TongNo, 0) < 0
+            THEN 0
+        ELSE k.NoHienTai + ISNULL(agg.TongNo, 0)
+    END
+    FROM KhachHang k
+    JOIN (
+        SELECT
+            h.MaKH,
+            SUM(i.SoLuong * s.GiaNuoc)
+            + CASE
+                WHEN SUM(i.SoLuong) > MAX(h.SoVoKhachTra)
+                THEN (SUM(i.SoLuong) - MAX(h.SoVoKhachTra)) * MAX(s.GiaVo)
+                ELSE 0
+              END
+            - MAX(h.DaThanhToan)                            AS TongNo
+        FROM inserted i
+        JOIN HoaDon h  ON i.MaHD  = h.MaHD
+        JOIN SanPham s ON i.MaSP  = s.MaSP
+        GROUP BY h.MaKH
+    ) agg ON k.MaKH = agg.MaKH;
 END
 GO
 
@@ -41,13 +53,16 @@ BEGIN
     SET NOCOUNT ON;
 
     UPDATE k
-    SET NoHienTai = k.NoHienTai - t.TongTien
+    SET NoHienTai = CASE
+        WHEN k.NoHienTai - ISNULL(t.TongTien, 0) < 0
+            THEN 0
+        ELSE k.NoHienTai - ISNULL(t.TongTien, 0)
+    END
     FROM KhachHang k
     JOIN (
         SELECT MaKH, SUM(SoTien) AS TongTien
         FROM inserted
         GROUP BY MaKH
     ) t ON k.MaKH = t.MaKH;
-
 END
 GO
