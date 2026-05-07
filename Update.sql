@@ -14,8 +14,6 @@ BEGIN
             h.MaKH,
             SUM(i.SoLuong)          AS TongSoLuong,
             MAX(h.SoVoKhachTra)     AS SoVo
-            -- MAX vì mỗi MaHD chỉ có 1 giá trị SoVoKhachTra,
-            -- dùng MAX để collapse sau GROUP BY MaKH
         FROM inserted i
         JOIN HoaDon h ON i.MaHD = h.MaHD
         GROUP BY h.MaKH
